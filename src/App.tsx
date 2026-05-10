@@ -16,7 +16,7 @@ import { Home, CalendarDays, BookOpen, UtensilsCrossed, Wallet, StickyNote, Shop
 type Tab = 'dashboard' | 'calendar' | 'homework' | 'meal' | 'finance' | 'notes' | 'shopping' | 'settings';
 
 function AppContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, connectionError } = useAuth();
   const { profile, loading: appLoading } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
 
@@ -26,6 +26,11 @@ function AppContent() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Memuat...</p>
+          {connectionError && (
+            <div className="mt-4 max-w-md mx-auto bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {connectionError}
+            </div>
+          )}
         </div>
       </div>
     );
