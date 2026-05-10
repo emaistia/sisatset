@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, UserPlus, AlertTriangle, RefreshCw, ExternalLink } from 'lucide-react';
+import { LogIn, UserPlus } from 'lucide-react';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,46 +8,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [serverReachable, setServerReachable] = useState<boolean | null>(null);
-  const [checkingServer, setCheckingServer] = useState(false);
-  const { signIn, signUp, connectionError } = useAuth();
-
-  const isPaused = connectionError || (error && (
-    error.includes('Failed to fetch') ||
-    error.includes('NetworkError') ||
-    error.includes('Network request failed') ||
-    error.includes('dijeda') ||
-    error.includes('tidak dapat terhubung')
-  ));
-
-  const checkServer = async () => {
-    setCheckingServer(true);
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/auth/v1/settings`, {
-        headers: { apikey: import.meta.env.VITE_SUPABASE_ANON_KEY },
-        signal: AbortSignal.timeout(10000),
-      });
-      if (response.ok) {
-        setServerReachable(true);
-      } else {
-        const text = await response.text();
-        if (text.includes('paused')) {
-          setServerReachable(false);
-        } else {
-          setServerReachable(false);
-        }
-      }
-    } catch {
-      setServerReachable(false);
-    } finally {
-      setCheckingServer(false);
-    }
-  };
-
-  useEffect(() => {
-    checkServer();
-  }, []);
+  const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,34 +40,6 @@ export default function Auth() {
           <h1 className="text-3xl font-bold text-pink-600 mb-2">SiSatSet</h1>
           <p className="text-gray-600">Aplikasi Biar Emak-Emak Makin SatSet!</p>
         </div>
-
-        {serverReachable === false && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="text-amber-500 flex-shrink-0 mt-0.5" size={22} />
-              <div className="space-y-3">
-                <h3 className="font-semibold text-amber-800">Server Sedang Tidak Aktif</h3>
-                <p className="text-sm text-amber-700">
-                  Proyek Supabase sedang dijeda. Data Anda aman, tapi server perlu diaktifkan kembali.
-                </p>
-                <ol className="text-sm text-amber-700 space-y-1.5 list-decimal list-inside">
-                  <li>Buka <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="underline font-medium inline-flex items-center gap-1 hover:text-amber-900">Supabase Dashboard <ExternalLink size={12} /></a></li>
-                  <li>Pilih proyek <span className="font-mono text-xs bg-amber-100 px-1.5 py-0.5 rounded">fzemlwjgfpasnvafvybk</span></li>
-                  <li>Klik tombol <strong>&quot;Restore&quot;</strong> atau <strong>&quot;Unpause&quot;</strong></li>
-                  <li>Tunggu beberapa menit hingga proyek aktif kembali</li>
-                </ol>
-                <button
-                  onClick={checkServer}
-                  disabled={checkingServer}
-                  className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-amber-800 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <RefreshCw size={14} className={checkingServer ? 'animate-spin' : ''} />
-                  {checkingServer ? 'Memeriksa...' : 'Cek Koneksi Lagi'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="flex gap-2 mb-6">
@@ -162,7 +95,7 @@ export default function Auth() {
               />
             </div>
 
-            {error && !isPaused && (
+            {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
@@ -170,7 +103,7 @@ export default function Auth() {
 
             <button
               type="submit"
-              disabled={loading || serverReachable === false}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-pink-500 to-orange-400 text-white py-3 px-4 rounded-lg font-medium hover:from-pink-600 hover:to-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
             >
               {loading ? (

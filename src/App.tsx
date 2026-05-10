@@ -16,7 +16,7 @@ import { Home, CalendarDays, BookOpen, UtensilsCrossed, Wallet, StickyNote, Shop
 type Tab = 'dashboard' | 'calendar' | 'homework' | 'meal' | 'finance' | 'notes' | 'shopping' | 'settings';
 
 function AppContent() {
-  const { user, loading: authLoading, connectionError } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { profile, loading: appLoading } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
 
