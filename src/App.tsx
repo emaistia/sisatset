@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider, useApp } from './contexts/AppContext';
-import Auth from './components/Auth';
+import LandingPage from './components/LandingPage';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
 import Calendar from './components/Calendar';
@@ -32,7 +32,7 @@ function AppContent() {
   }
 
   if (!user) {
-    return <Auth />;
+    return <LandingPage />;
   }
 
   if (!profile?.onboarding_completed) {
