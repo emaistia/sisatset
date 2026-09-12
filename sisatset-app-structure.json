@@ -1,0 +1,674 @@
+{
+  "app_name": "SiSatSet",
+  "tagline": "Aplikasi Biar Emak-Emak Makin SatSet!",
+  "description": "Web app for Indonesian mothers/families to manage school schedules, homework, meal planning, finances, notes, shopping, and family events in one dashboard.",
+  "creator": "Ema Istianasari",
+  "contact": "sisatset.app@gmail.com",
+  "demo_url": "https://sisatset.bolt.host",
+  "created_during": "Hackathon (25-26 October 2025)",
+  "language": "Indonesian (Bahasa Indonesia)",
+  "target_audience": "Indonesian mothers (emak-emak) with school-aged children",
+
+  "tech_stack": {
+    "frontend": {
+      "framework": "React 18.3.1",
+      "build_tool": "Vite 5.4.2",
+      "styling": "Tailwind CSS 3.4.1",
+      "icons": "lucide-react 0.344.0",
+      "language": "TypeScript 5.5.3",
+      "linting": "ESLint 9.9.1"
+    },
+    "backend": {
+      "database": "Supabase (PostgreSQL)",
+      "auth": "Supabase Auth (email/password)",
+      "client_library": "@supabase/supabase-js 2.57.4"
+    },
+    "mobile": {
+      "wrapper": "Capacitor 8.3.3",
+      "platform": "Android (com.sisatset.app)",
+      "plugins": ["@capacitor/app", "@capacitor/splash-screen", "@capacitor/status-bar"]
+    },
+    "design": {
+      "theme_colors": {
+        "primary": "#f43f5e (rose/pink)",
+        "secondary": "#fb923c (orange)",
+        "background_gradient": "from-pink-50 via-rose-50 to-orange-50",
+        "header_gradient": "from-pink-500 to-orange-400"
+      },
+      "font": "System default (no custom font loaded)",
+      "layout": "Mobile-first, max-width 2xl, bottom navigation bar",
+      "spacing_system": "8px (Tailwind default)"
+    }
+  },
+
+  "authentication": {
+    "provider": "Supabase Auth",
+    "method": "Email/Password",
+    "email_confirmation": false,
+    "features": {
+      "sign_up": "User enters email + password (min 6 chars), auto-logged in after signup",
+      "sign_in": "Email + password login",
+      "sign_out": "From Settings page",
+      "demo_account": "demo@email.com / demo123 (pre-filled button on landing page)",
+      "session_persistence": "Via Supabase getSession + onAuthStateChange"
+    },
+    "auth_context": "AuthContext.tsx provides user, loading, signUp, signIn, signOut",
+    "onboarding_flow": "After first login → welcome screen → enter mama name → enter children (name, grade, color) → complete"
+  },
+
+  "navigation": {
+    "type": "Bottom tab bar (fixed, horizontally scrollable)",
+    "tabs": [
+      { "id": "dashboard", "label": "Dashboard", "icon": "Home" },
+      { "id": "calendar", "label": "Kalender", "icon": "CalendarDays" },
+      { "id": "homework", "label": "PR", "icon": "BookOpen" },
+      { "id": "meal", "label": "Bekal", "icon": "UtensilsCrossed" },
+      { "id": "notes", "label": "Catatan", "icon": "StickyNote" },
+      { "id": "finance", "label": "Keuangan", "icon": "Wallet" },
+      { "id": "shopping", "label": "Belanja", "icon": "ShoppingCart" }
+    ],
+    "settings_access": "Via gear icon on Dashboard header",
+    "max_width": "max-w-2xl (centered)"
+  },
+
+  "features": {
+    "landing_page": {
+      "file": "LandingPage.tsx",
+      "description": "Marketing landing page with hero, features grid, benefits, how-to steps, target audience, CTA, contact, footer",
+      "views": ["landing", "login", "register"],
+      "sections": [
+        "Hero with gradient text and CTA buttons (Daftar Gratis / Coba Demo)",
+        "Features grid (6 feature cards with icons)",
+        "Benefits section (4 benefit items)",
+        "How to use (3 steps)",
+        "Who is it for (3 audience types)",
+        "CTA section with gradient card",
+        "Contact (email link)",
+        "Footer"
+      ]
+    },
+
+    "dashboard": {
+      "file": "Dashboard.tsx",
+      "description": "Main hub showing overview of all features",
+      "sections": [
+        "Greeting header with mama name, date, settings button",
+        "Quick stats grid (6 cards): Notes, Events, Meals, Homework, Finance, Shopping - each navigates to its tab",
+        "School schedule by day selector (Senin-Sabtu) with child avatars, subjects, uniform, hours",
+        "Finance summary card with budget vs actual progress bar",
+        "Daily tips (rotating, 10 tips, day-of-year based selection)"
+      ],
+      "data_loaded": [
+        "Today's school schedule (per child, per selected day)",
+        "Upcoming homework (next 7 days, incomplete)",
+        "Today's meals (from weekly_meal_plans)",
+        "Pinned notes (not done)",
+        "Pending shopping items",
+        "Upcoming events (this month, max 3)",
+        "Budget summary (planned, actual, percentage)",
+        "Unpaid bills count"
+      ],
+      "refresh_behavior": "Reloads on visibility change, window focus, and scheduleUpdated custom event"
+    },
+
+    "calendar": {
+      "file": "Calendar.tsx",
+      "description": "Monthly calendar view with events",
+      "categories": ["Sekolah", "Les", "Ekstrakurikuler", "Acara Keluarga", "Lainnya"],
+      "features": [
+        "Monthly grid calendar with event dots (colored by child)",
+        "Category filter pills",
+        "Upcoming events list (next 5)",
+        "Add event modal (title, category, child, date, time, notes)",
+        "Quick Input (copy-paste from WhatsApp) - parses category, child name, date (DD/MM/YYYY), time (HH:MM)",
+        "Click date to see all events for that day in bottom sheet",
+        "Delete events"
+      ]
+    },
+
+    "homework": {
+      "file": "Homework.tsx",
+      "description": "Homework/assignment tracker per child",
+      "features": [
+        "Child filter pills (All / per child)",
+        "Add homework modal (child, subject, description, deadline)",
+        "Quick Input (copy-paste from WA) - parses child name, subject, description, deadline",
+        "Toggle complete/incomplete",
+        "Delete homework",
+        "Urgent badge (deadline within 2 days)",
+        "Separate sections: incomplete + completed"
+      ]
+    },
+
+    "meal_planner": {
+      "file": "MealPlanner.tsx",
+      "description": "Weekly meal planning with recipe library, fridge inventory, and shopping list",
+      "tabs": ["planner", "fridge", "shopping"],
+      "planner_features": [
+        "Weekly grid (Senin-Minggu) with 4 meal types per day: sarapan, bekal, siang, malam",
+        "Week navigation (prev/next week)",
+        "Toggle Saturday visibility",
+        "Click slot to select recipe from library",
+        "Recipe search + tag filter",
+        "Recipe detail modal (ingredients, instructions)",
+        "Generate shopping list from planned meals"
+      ],
+      "fridge_features": [
+        "Add fridge items (name, quantity, category)",
+        "Categories: Protein, Sayur, Karbohidrat, Bumbu, Lainnya",
+        "AI-like recipe matcher: finds recipes matching fridge ingredients (perfect ≥70% match, partial ≥30%)",
+        "Add missing ingredients to shopping list"
+      ],
+      "shopping_features": [
+        "Auto-generated from meal plans",
+        "Transfer items to main shopping list (Shopping tab)",
+        "Delete items"
+      ],
+      "recipe_schema": {
+        "fields": ["id", "name", "icon (emoji)", "category", "tags[]", "time", "difficulty", "ingredients[{name, amount}]", "instructions[]", "is_default"]
+      }
+    },
+
+    "finance": {
+      "file": "Finance.tsx",
+      "description": "Monthly budget and expense tracking",
+      "categories": ["SPP", "Belanja Bulanan", "Lainnya", "Listrik & Air", "Transport"],
+      "payment_methods": ["Transfer", "GoPay", "OVO", "Dana", "Cash", "Kartu Kredit"],
+      "features": [
+        "Month/year selector",
+        "Summary header: total budget, total expenses, paid, unpaid, cashback",
+        "Budget vs actual per category with progress bars",
+        "Financial analysis (AI-like tips based on top expense category)",
+        "Payment method breakdown",
+        "Expense list with paid/unpaid status, cashback display",
+        "Add expense modal (category, amount, date, payment method, cashback, notes, paid, recurring)",
+        "Set monthly budget per category",
+        "Delete expenses"
+      ]
+    },
+
+    "notes": {
+      "file": "Notes.tsx",
+      "description": "Sticky notes with pin and done states",
+      "features": [
+        "Add note (text content)",
+        "Pin/unpin notes (pinned shown in yellow section)",
+        "Mark done/undone",
+        "Delete notes",
+        "Three sections: Pinned (important), Active, Done"
+      ]
+    },
+
+    "shopping": {
+      "file": "Shopping.tsx",
+      "description": "Shopping list with quantity, price, category",
+      "categories": ["Sayuran", "Buah", "Daging & Ikan", "Bumbu Dapur", "Kebutuhan Harian", "Snack", "Lainnya"],
+      "features": [
+        "Add item (name, quantity, price, category)",
+        "Quick Input (copy-paste list) - auto-detects quantity (kg/gr/buah), price (Rp), category",
+        "Check/uncheck items (bought/not bought)",
+        "Edit quantity and price inline",
+        "Delete items",
+        "Estimate total price for pending items",
+        "Separate sections: pending + checked"
+      ]
+    },
+
+    "settings": {
+      "file": "Settings.tsx",
+      "description": "Profile, children, schedule, notes, and shopping management",
+      "tabs": ["profile", "children", "schedule", "notes", "shopping"],
+      "profile_tab": [
+        "Edit mama name",
+        "Toggle show children in greeting",
+        "Save profile",
+        "Logout"
+      ],
+      "children_tab": [
+        "Add child (name, grade, color picker from 6 colors)",
+        "Delete child (cascades to schedules + homework)",
+        "Color options: #FF6B9D, #FF8C42, #FFD93D, #6BCF7F, #4ECDC4, #A78BFA"
+      ],
+      "schedule_tab": [
+        "Select child + day",
+        "Enter subjects (comma-separated), uniform, school hours",
+        "Quick Input (copy-paste from WA) - parses day, subjects, hours, uniform",
+        "Save schedule (upsert with unique constraint on child_id + day_of_week)"
+      ],
+      "notes_tab": [
+        "Quick add note",
+        "Quick Input (batch notes, one per line)",
+        "Pin, done, delete"
+      ],
+      "shopping_tab": [
+        "Quick add shopping item",
+        "Check/uncheck, delete"
+      ]
+    },
+
+    "quick_input": {
+      "file": "QuickInput.tsx",
+      "description": "Reusable component for copy-paste data entry from WhatsApp/Notes",
+      "modes": ["manual (type)", "paste (copy-paste)"],
+      "used_in": ["Calendar (events)", "Homework (PR)", "Shopping (belanja)", "Settings (schedule + notes)"],
+      "parsing_capabilities": {
+        "calendar": "Detects category keywords, child names, dates (DD/MM/YYYY), times (HH:MM)",
+        "homework": "Detects child names, subject (after 'PR '/'Tugas '), deadlines (DD/MM/YYYY or 'Deadline:' prefix)",
+        "shopping": "Detects quantity (kg/gr/buah/pcs etc), price (Rp), auto-categorizes by keyword",
+        "schedule": "Detects day names, subjects, hours (contains 'jam' or time pattern), uniform (contains 'seragam'/'baju')",
+        "notes": "One note per line"
+      }
+    }
+  },
+
+  "database_schema": {
+    "provider": "Supabase (PostgreSQL)",
+    "rls": "Enabled on ALL tables - users can only access their own data",
+    "tables": [
+      {
+        "name": "user_profiles",
+        "purpose": "User profile data",
+        "primary_key": "id (uuid, defaults to auth.uid())",
+        "columns": {
+          "id": "uuid PK (auth.uid())",
+          "mama_name": "text NOT NULL",
+          "show_children_in_greeting": "boolean DEFAULT true",
+          "onboarding_completed": "boolean DEFAULT false",
+          "created_at": "timestamptz DEFAULT now()",
+          "updated_at": "timestamptz DEFAULT now()"
+        },
+        "rls_policies": ["SELECT own (auth.uid() = id)", "INSERT own (auth.uid() = id)", "UPDATE own (auth.uid() = id)"]
+      },
+      {
+        "name": "children",
+        "purpose": "Children data linked to user",
+        "primary_key": "id (uuid)",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → user_profiles(id) ON DELETE CASCADE",
+          "name": "text NOT NULL",
+          "grade": "text NOT NULL",
+          "color": "text DEFAULT '#FF6B9D'",
+          "created_at": "timestamptz DEFAULT now()"
+        },
+        "rls_policies": ["SELECT/INSERT/UPDATE/DELETE where auth.uid() = user_id"]
+      },
+      {
+        "name": "schedules",
+        "purpose": "School schedule per child per day",
+        "primary_key": "id (uuid)",
+        "columns": {
+          "id": "uuid PK",
+          "child_id": "uuid FK → children(id) ON DELETE CASCADE",
+          "day_of_week": "text CHECK IN ('senin','selasa','rabu','kamis','jumat','sabtu')",
+          "subjects": "jsonb DEFAULT '[]'",
+          "uniform": "text DEFAULT ''",
+          "school_hours": "text DEFAULT ''",
+          "created_at": "timestamptz DEFAULT now()"
+        },
+        "unique_constraint": "(child_id, day_of_week)",
+        "rls_policies": ["CRUD via EXISTS check on children.user_id = auth.uid()"]
+      },
+      {
+        "name": "homework",
+        "purpose": "Homework/assignment tracking",
+        "primary_key": "id (uuid)",
+        "columns": {
+          "id": "uuid PK",
+          "child_id": "uuid FK → children(id) ON DELETE CASCADE",
+          "subject": "text NOT NULL",
+          "description": "text NOT NULL",
+          "deadline": "date NOT NULL",
+          "completed": "boolean DEFAULT false",
+          "created_at": "timestamptz DEFAULT now()"
+        },
+        "rls_policies": ["CRUD via EXISTS check on children.user_id = auth.uid()"]
+      },
+      {
+        "name": "user_recipes",
+        "purpose": "Custom user recipes (older table, may be unused)",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → user_profiles(id)",
+          "name": "text",
+          "category": "text DEFAULT 'Lainnya'",
+          "cooking_time": "text",
+          "difficulty": "text DEFAULT 'Mudah'",
+          "ingredients": "jsonb DEFAULT '[]'",
+          "instructions": "jsonb DEFAULT '[]'"
+        },
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "meal_plans",
+        "purpose": "Daily meal planning (older table, may be unused)",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → user_profiles(id)",
+          "plan_date": "date NOT NULL",
+          "meal_type": "text CHECK IN ('sarapan','bekal','makan_siang','makan_malam')",
+          "recipe_name": "text NOT NULL",
+          "notes": "text DEFAULT ''"
+        },
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "monthly_budgets",
+        "purpose": "Monthly budget per category",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → user_profiles(id)",
+          "month": "integer CHECK 1-12",
+          "year": "integer",
+          "category": "text",
+          "planned_amount": "numeric(12,2) DEFAULT 0"
+        },
+        "unique_constraint": "(user_id, month, year, category)",
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "expenses",
+        "purpose": "Daily expense/transaction tracking",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → user_profiles(id)",
+          "category": "text",
+          "amount": "numeric(12,2) NOT NULL",
+          "expense_date": "date DEFAULT CURRENT_DATE",
+          "notes": "text DEFAULT ''",
+          "payment_method": "text DEFAULT 'Cash'",
+          "cashback": "numeric(12,2) DEFAULT 0",
+          "paid": "boolean DEFAULT false NOT NULL",
+          "recurring": "boolean DEFAULT false NOT NULL"
+        },
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "shopping_list",
+        "purpose": "Main shopping list (used by Shopping.tsx and Settings.tsx)",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → user_profiles(id)",
+          "item": "text NOT NULL",
+          "quantity": "text DEFAULT '1'",
+          "price": "numeric(12,2) DEFAULT 0",
+          "category": "text DEFAULT 'Lainnya'",
+          "checked": "boolean DEFAULT false",
+          "source": "text DEFAULT 'manual'"
+        },
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "notes",
+        "purpose": "Notes and reminders",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → user_profiles(id)",
+          "content": "text NOT NULL",
+          "pinned": "boolean DEFAULT false",
+          "done": "boolean DEFAULT false",
+          "created_at": "timestamptz DEFAULT now()",
+          "updated_at": "timestamptz DEFAULT now()"
+        },
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "announcements",
+        "purpose": "Parsed school announcements (table exists but no UI component uses it)",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → user_profiles(id)",
+          "original_text": "text NOT NULL",
+          "parsed_data": "jsonb DEFAULT '{}'",
+          "announcement_date": "date DEFAULT CURRENT_DATE"
+        },
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "events",
+        "purpose": "Family and school events on calendar",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → user_profiles(id)",
+          "child_id": "uuid FK → children(id) ON DELETE CASCADE (nullable)",
+          "title": "text NOT NULL",
+          "category": "text DEFAULT 'Lainnya'",
+          "event_date": "date NOT NULL",
+          "event_time": "text DEFAULT ''",
+          "notes": "text DEFAULT ''"
+        },
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "recipes",
+        "purpose": "Recipe library (default + user-created, used by MealPlanner)",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → auth.users(id) (nullable for defaults)",
+          "name": "text NOT NULL",
+          "icon": "text DEFAULT '🍽️'",
+          "category": "text CHECK IN ('sarapan','bekal','utama')",
+          "tags": "text[] DEFAULT '{}'",
+          "time": "text DEFAULT '30 menit'",
+          "difficulty": "text CHECK IN ('Mudah','Sedang','Susah')",
+          "ingredients": "jsonb NOT NULL DEFAULT '[]' (array of {name, amount})",
+          "instructions": "text[] NOT NULL DEFAULT '{}'",
+          "is_default": "boolean DEFAULT false"
+        },
+        "rls_policies": [
+          "SELECT: is_default = true OR auth.uid() = user_id",
+          "INSERT/UPDATE/DELETE: auth.uid() = user_id AND is_default = false"
+        ]
+      },
+      {
+        "name": "weekly_meal_plans",
+        "purpose": "Weekly meal planning (used by MealPlanner, newer version of meal_plans)",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → auth.users(id)",
+          "day_of_week": "text CHECK IN ('senin'...'minggu')",
+          "meal_type": "text CHECK IN ('sarapan','bekal','siang','malam')",
+          "recipe_id": "uuid FK → recipes(id) ON DELETE CASCADE",
+          "week_start_date": "date NOT NULL"
+        },
+        "unique_constraint": "(user_id, week_start_date, day_of_week, meal_type)",
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "fridge_inventory",
+        "purpose": "Fridge/kitchen inventory for recipe matching",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → auth.users(id)",
+          "name": "text NOT NULL",
+          "quantity": "text NOT NULL",
+          "category": "text CHECK IN ('Protein','Sayur','Karbohidrat','Bumbu','Lainnya')"
+        },
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      },
+      {
+        "name": "shopping_lists",
+        "purpose": "Meal-plan-generated shopping list (used by MealPlanner, separate from shopping_list)",
+        "columns": {
+          "id": "uuid PK",
+          "user_id": "uuid FK → auth.users(id)",
+          "item_name": "text NOT NULL",
+          "quantity": "text DEFAULT '1'",
+          "category": "text DEFAULT 'Lainnya'",
+          "completed": "boolean DEFAULT false",
+          "from_meal_plan": "boolean DEFAULT false"
+        },
+        "rls_policies": ["CRUD where auth.uid() = user_id"]
+      }
+    ],
+    "indexes": [
+      "idx_children_user_id on children(user_id)",
+      "idx_schedules_child_id on schedules(child_id)",
+      "idx_homework_child_id on homework(child_id)",
+      "idx_homework_deadline on homework(deadline)",
+      "idx_meal_plans_user_date on meal_plans(user_id, plan_date)",
+      "idx_expenses_user_date on expenses(user_id, expense_date)",
+      "idx_notes_user_pinned on notes(user_id, pinned)",
+      "idx_events_user_date on events(user_id, event_date)",
+      "idx_events_child_date on events(child_id, event_date)"
+    ],
+    "migrations": [
+      "20251025163412_create_sisatset_schema.sql (initial schema)",
+      "20251025182329_add_schedules_unique_constraint.sql",
+      "20251025183635_create_events_table.sql",
+      "20251025185422_create_meal_planner_schema.sql",
+      "20251025200000_add_expense_flags.sql",
+      "20251025200326_add_expense_flags.sql",
+      "20260510043154_trigger_unpause_check.sql",
+      "20260510043309_sisatset_complete_schema.sql (consolidated fresh setup)"
+    ]
+  },
+
+  "component_architecture": {
+    "root": "App.tsx → AuthProvider → AppProvider → AppContent",
+    "contexts": {
+      "AuthContext.tsx": "Manages Supabase auth state (user, loading, signIn, signUp, signOut)",
+      "AppContext.tsx": "Manages app data (profile, children, selectedChild, refresh functions)"
+    },
+    "routing": "No router library - conditional rendering based on auth state + activeTab useState",
+    "flow": {
+      "loading": "Spinner while auth/app context loads",
+      "no_user": "LandingPage (marketing + login/register)",
+      "user_no_onboarding": "Onboarding (welcome → name → children)",
+      "user_onboarded": "Main app with bottom nav tabs"
+    },
+    "components": [
+      "App.tsx - Root component with tab routing",
+      "LandingPage.tsx - Marketing page + auth forms",
+      "Onboarding.tsx - 3-step onboarding wizard",
+      "Dashboard.tsx - Overview hub",
+      "Calendar.tsx - Monthly calendar + events",
+      "Homework.tsx - PR tracker",
+      "MealPlanner.tsx - Weekly meal planner + fridge + recipes",
+      "Finance.tsx - Budget + expenses",
+      "Notes.tsx - Sticky notes",
+      "Shopping.tsx - Shopping list",
+      "Settings.tsx - Profile/children/schedule/notes/shopping management",
+      "QuickInput.tsx - Reusable copy-paste input modal",
+      "Auth.tsx - Standalone auth component (appears unused, superseded by LandingPage)"
+    ],
+    "lib": "supabase.ts - Client init + TypeScript type definitions for all tables"
+  },
+
+  "ai_like_features": {
+    "note": "No actual AI/ML integration exists. 'AI-like' features use rule-based logic.",
+    "features": [
+      {
+        "name": "Daily Tips",
+        "location": "Dashboard.tsx",
+        "description": "10 hardcoded parenting/productivity tips, rotated by day-of-year"
+      },
+      {
+        "name": "Financial Analysis",
+        "location": "Finance.tsx",
+        "description": "Rule-based tips: over-budget warning, essential vs non-essential category analysis, top expense category percentage"
+      },
+      {
+        "name": "Recipe Matcher",
+        "location": "MealPlanner.tsx",
+        "description": "Ingredient matching algorithm: normalizes ingredient names, checks fridge inventory against recipe ingredients, classifies as perfect (≥70% match) or partial (≥30%)"
+      },
+      {
+        "name": "Quick Input Parser",
+        "location": "QuickInput.tsx + callers",
+        "description": "Regex-based parser for copy-pasted text from WhatsApp: detects dates, times, quantities, prices, categories, child names"
+      }
+    ]
+  },
+
+  "known_issues_and_gaps": {
+    "duplicate_tables": [
+      "meal_plans (older) vs weekly_meal_plans (newer) - both exist, MealPlanner uses weekly_meal_plans",
+      "shopping_list (main) vs shopping_lists (meal plan generated) - separate tables, items transferred between them",
+      "user_recipes (older) vs recipes (newer with is_default) - MealPlanner uses recipes"
+    ],
+    "unused_components": ["Auth.tsx - standalone auth component, superseded by LandingPage.tsx"],
+    "unused_tables": ["announcements - table exists with RLS but no UI component references it"],
+    "no_real_ai": "README mentions AI-powered features but implementation is rule-based, no external AI API integration",
+    "no_realtime": "No Supabase realtime subscriptions - data refreshes via visibility change, focus events, and manual reloads",
+    "no_notifications": "No push notifications or in-app notification system despite README mentioning reminders",
+    "no_offline_support": "No PWA caching or offline data strategy beyond Supabase client defaults",
+    "no_error_handling_on_ui": "Most supabase calls use destructured { data } without checking error, errors are silently ignored",
+    "no_loading_states_per_page": "Only Dashboard has a loading spinner; other pages load data without individual loading indicators",
+    "no_form_validation": "Minimal validation - mostly just required field checks, no email format validation, no password strength",
+    "demo_account": "Hardcoded demo credentials in LandingPage.tsx (demo@email.com / demo123)"
+  },
+
+  "improvement_opportunities": {
+    "ai_integration": [
+      "Use AI to parse WhatsApp announcements into structured events/homework/notes",
+      "AI-powered meal suggestions based on fridge contents and family preferences",
+      "AI financial advisor for budget optimization tips",
+      "AI-generated daily parenting tips instead of hardcoded rotation"
+    ],
+    "ux_improvements": [
+      "Add push notifications for homework deadlines and event reminders",
+      "Add dark mode support",
+      "Add data export/import (backup)",
+      "Add family sharing (multiple users managing same children)",
+      "Add search across all data types",
+      "Add dashboard widgets customization"
+    ],
+    "technical_improvements": [
+      "Consolidate duplicate tables (meal_plans + weekly_meal_plans, shopping_list + shopping_lists)",
+      "Add proper error boundaries and error toast notifications",
+      "Add Supabase realtime subscriptions for live updates",
+      "Add proper loading skeletons for each page",
+      "Add form validation library (e.g., zod + react-hook-form)",
+      "Add routing library (e.g., react-router) for proper URL-based navigation",
+      "Add PWA service worker for offline support",
+      "Remove unused Auth.tsx component and announcements table",
+      "Add unit/integration tests"
+    ],
+    "new_features": [
+      "Child attendance tracking",
+      "Report card / grade tracking",
+      "Extracurricular activity management",
+      "Health/medical records (vaccination, allergies)",
+      "Emergency contacts",
+      "School holiday calendar integration",
+      "Transport/pickup arrangement tracking",
+      "Multi-language support (English)",
+      "Photo/image attachments for notes and events",
+      "Recurring event support",
+      "Expense receipt photo capture",
+      "Budget category customization"
+    ]
+  },
+
+  "file_structure": {
+    "root_files": [
+      "index.html - HTML entry point with meta tags, manifest link",
+      "package.json - Dependencies and scripts",
+      "vite.config.ts - Vite config with React plugin",
+      "tailwind.config.js - Tailwind config (minimal, no custom theme)",
+      "postcss.config.js - PostCSS config",
+      "tsconfig.json / tsconfig.app.json / tsconfig.node.json - TypeScript configs",
+      "eslint.config.js - ESLint config",
+      "capacitor.config.ts - Capacitor config for Android",
+      "public/manifest.json - PWA manifest",
+      "public/_redirects - SPA redirect rule"
+    ],
+    "src/": {
+      "main.tsx - React entry point + Capacitor init",
+      "App.tsx - Root component with tab navigation",
+      "index.css - Tailwind directives + scrollbar-hide utilities",
+      "vite-env.d.ts - Vite type reference",
+      "lib/supabase.ts - Supabase client + type definitions",
+      "contexts/": ["AuthContext.tsx", "AppContext.tsx"],
+      "components/": [
+        "LandingPage.tsx", "Onboarding.tsx", "Dashboard.tsx",
+        "Calendar.tsx", "Homework.tsx", "MealPlanner.tsx",
+        "Finance.tsx", "Notes.tsx", "Shopping.tsx",
+        "Settings.tsx", "QuickInput.tsx", "Auth.tsx"
+      ]
+    },
+    "supabase/migrations/": "8 SQL migration files",
+    "android/": "Full Capacitor Android project (Gradle, manifest, resources)"
+  }
+}
