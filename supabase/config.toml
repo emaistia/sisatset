@@ -1,0 +1,5 @@
+[functions.seed-recipes]
+verify_jwt = false
+
+[functions.subscribe-marketing]
+verify_jwt = true

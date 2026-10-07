@@ -12,6 +12,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export type UserProfile = {
   id: string;
   mama_name: string;
+  email: string | null;
+  marketing_consent: boolean;
+  marketing_consent_at: string | null;
   show_children_in_greeting: boolean;
   onboarding_completed: boolean;
   created_at: string;
