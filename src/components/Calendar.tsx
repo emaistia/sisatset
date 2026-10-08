@@ -7,6 +7,45 @@ import QuickInput from './QuickInput';
 
 const CATEGORIES = ['Sekolah', 'Les', 'Ekstrakurikuler', 'Acara Keluarga', 'Lainnya'];
 
+const INDONESIAN_MONTHS: Record<string, string> = {
+  januari: '01',
+  februari: '02',
+  maret: '03',
+  april: '04',
+  mei: '05',
+  juni: '06',
+  juli: '07',
+  agustus: '08',
+  september: '09',
+  oktober: '10',
+  november: '11',
+  desember: '12',
+};
+
+function parseEventDate(line: string, fallbackYear: number): string | null {
+  const numericMatch = line.match(/(?:^|\s)(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?(?:\s|$)/);
+  if (numericMatch) {
+    const [, day, month, year] = numericMatch;
+    const fullYear = year ? (year.length === 2 ? `20${year}` : year) : String(fallbackYear);
+    return `${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
+  const namedMonthMatch = line.toLowerCase().match(/(?:^|\s)(\d{1,2})\s+(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)\s+(\d{4})(?:\s|$)/);
+  if (!namedMonthMatch) return null;
+
+  const [, day, monthName, year] = namedMonthMatch;
+  return `${year}-${INDONESIAN_MONTHS[monthName]}-${day.padStart(2, '0')}`;
+}
+
+function parseEventTime(line: string): string | null {
+  const timeMatch = line.match(/(?:jam\s*)?(\d{1,2})[:.](\d{2})/i);
+  return timeMatch ? `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}` : null;
+}
+
+function isEventLabel(line: string): boolean {
+  return /^(jadwal\s+lomba|tanggal|mata\s+pelajaran|jam|waktu)\s*:?$/i.test(line.trim());
+}
+
 export default function Calendar() {
   const { user } = useAuth();
   const { children } = useApp();
@@ -96,78 +135,77 @@ export default function Calendar() {
   const handleQuickInput = async (text: string) => {
     if (!user) return;
 
-    const lines = text.split('\n').filter((line) => line.trim());
-    const eventsList: Array<{
-      title: string;
-      category: string;
-      event_date: string;
-      event_time: string;
-      notes: string;
-      child_id: string | null;
-    }> = [];
-
+    const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const currentYear = new Date().getFullYear();
     let currentCategory = 'Lainnya';
     let currentChild: string | null = null;
-    let currentDate = '';
-    let currentTime = '';
+    let eventDate = '';
+    let eventTime = '';
+    let dateIndex = -1;
+    const titleParts: string[] = [];
+    const detailParts: string[] = [];
 
-    for (const line of lines) {
-      const trimmed = line.trim();
-      const lowerLine = trimmed.toLowerCase();
-
-      const categoryMatch = CATEGORIES.find((cat) => lowerLine.includes(cat.toLowerCase()));
+    lines.forEach((line, index) => {
+      const lowerLine = line.toLowerCase();
+      const categoryMatch = CATEGORIES.find((category) => lowerLine === category.toLowerCase());
       if (categoryMatch) {
         currentCategory = categoryMatch;
-        continue;
+        return;
       }
 
-      const childMatch = children.find((c) => lowerLine.includes(c.name.toLowerCase()));
+      const childMatch = children.find((child) => lowerLine.includes(child.name.toLowerCase()));
       if (childMatch) {
         currentChild = childMatch.id;
       }
 
-      const dateMatch = trimmed.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-]?(\d{2,4})?/);
-      if (dateMatch) {
-        const [, day, month, year] = dateMatch;
-        const fullYear = year ? (year.length === 2 ? '20' + year : year) : currentDate.getFullYear().toString();
-        currentDate = `${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      const parsedDate = parseEventDate(line, currentYear);
+      if (parsedDate) {
+        eventDate = parsedDate;
+        dateIndex = index;
+        return;
       }
 
-      const timeMatch = trimmed.match(/(\d{1,2}):(\d{2})/);
-      if (timeMatch) {
-        currentTime = timeMatch[0];
+      const parsedTime = parseEventTime(line);
+      if (parsedTime) {
+        eventTime = parsedTime;
+        return;
       }
 
-      if (!dateMatch && !timeMatch && !categoryMatch && !childMatch && trimmed) {
-        const title = trimmed.replace(/^[-*•]\s*/, '');
-        if (title && currentDate) {
-          eventsList.push({
-            title,
-            category: currentCategory,
-            event_date: currentDate,
-            event_time: currentTime,
-            notes: '',
-            child_id: currentChild,
-          });
-        }
-      }
-    }
+      if (isEventLabel(line) || childMatch) return;
 
-    if (eventsList.length === 0) {
-      alert('Tidak ada event yang terdeteksi!');
+      const cleanLine = line.replace(/^[-*•]\s*/, '').trim();
+      if (index < dateIndex || dateIndex === -1) {
+        titleParts.push(cleanLine);
+      } else {
+        detailParts.push(cleanLine);
+      }
+    });
+
+    if (!eventDate) {
+      alert('Tanggal event belum dikenali. Gunakan contoh 18/10/2026 atau 18 Oktober 2026.');
       return;
     }
 
-    for (const event of eventsList) {
-      await supabase.from('events').insert({
-        user_id: user.id,
-        ...event,
-      });
+    const title = titleParts.join(' - ').trim() || detailParts.shift() || 'Event Baru';
+    const notes = detailParts.join('\n');
+    const { error } = await supabase.from('events').insert({
+      user_id: user.id,
+      title,
+      category: currentCategory,
+      event_date: eventDate,
+      event_time: eventTime,
+      notes,
+      child_id: currentChild,
+    });
+
+    if (error) {
+      alert('Event belum tersimpan. Silakan coba lagi.');
+      return;
     }
 
     setShowQuickInput(false);
-    loadEvents();
-    alert(`Berhasil menambahkan ${eventsList.length} event!`);
+    await loadEvents();
+    alert('Berhasil menambahkan 1 event!');
   };
 
   const getDaysInMonth = () => {
