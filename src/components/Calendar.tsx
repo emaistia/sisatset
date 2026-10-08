@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
-import { supabase, Event, Child } from '../lib/supabase';
-import { Calendar as CalendarIcon, Plus, X, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { supabase, Event } from '../lib/supabase';
+import { Calendar as CalendarIcon, Plus, X, ChevronLeft, ChevronRight, Sparkles, Pencil } from 'lucide-react';
 import QuickInput from './QuickInput';
 
 const CATEGORIES = ['Sekolah', 'Les', 'Ekstrakurikuler', 'Acara Keluarga', 'Lainnya'];
@@ -53,6 +53,7 @@ export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [showQuickInput, setShowQuickInput] = useState(false);
   const [selectedDateEvents, setSelectedDateEvents] = useState<(Event & { child_name?: string; child_color?: string })[] | null>(null);
   const [newEvent, setNewEvent] = useState({
@@ -103,15 +104,23 @@ export default function Calendar() {
   const handleAddEvent = async () => {
     if (!user || !newEvent.title || !newEvent.event_date) return;
 
-    await supabase.from('events').insert({
-      user_id: user.id,
+    const eventData = {
       title: newEvent.title,
       category: newEvent.category,
       event_date: newEvent.event_date,
       event_time: newEvent.event_time,
       notes: newEvent.notes,
       child_id: newEvent.child_id || null,
-    });
+    };
+
+    const result = editingEventId
+      ? await supabase.from('events').update(eventData).eq('id', editingEventId).eq('user_id', user.id)
+      : await supabase.from('events').insert({ user_id: user.id, ...eventData });
+
+    if (result.error) {
+      alert('Event belum tersimpan. Silakan coba lagi.');
+      return;
+    }
 
     setNewEvent({
       title: '',
@@ -121,8 +130,22 @@ export default function Calendar() {
       notes: '',
       child_id: '',
     });
+    setEditingEventId(null);
     setShowAddModal(false);
-    loadEvents();
+    await loadEvents();
+  };
+
+  const handleEditEvent = (event: Event) => {
+    setEditingEventId(event.id);
+    setNewEvent({
+      title: event.title,
+      category: event.category,
+      event_date: event.event_date,
+      event_time: event.event_time || '',
+      notes: event.notes || '',
+      child_id: event.child_id || '',
+    });
+    setShowAddModal(true);
   };
 
   const handleDeleteEvent = async (id: string) => {
@@ -282,7 +305,11 @@ export default function Calendar() {
               <Sparkles size={20} />
             </button>
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={() => {
+                setEditingEventId(null);
+                setNewEvent({ title: '', category: 'Sekolah', event_date: '', event_time: '', notes: '', child_id: '' });
+                setShowAddModal(true);
+              }}
               className="bg-white text-pink-600 p-2 rounded-full hover:bg-pink-50 transition-colors"
             >
               <Plus size={24} />
@@ -413,12 +440,22 @@ export default function Calendar() {
                           {event.category}
                         </span>
                       </div>
-                      <button
-                        onClick={() => handleDeleteEvent(event.id)}
-                        className="text-red-500 hover:text-red-700 ml-2"
-                      >
-                        <X size={18} />
-                      </button>
+                      <div className="flex items-center gap-2 ml-2">
+                        <button
+                          onClick={() => handleEditEvent(event)}
+                          className="text-gray-500 hover:text-pink-600"
+                          aria-label="Edit event"
+                        >
+                          <Pencil size={17} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEvent(event.id)}
+                          className="text-red-500 hover:text-red-700"
+                          aria-label="Hapus event"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -432,8 +469,14 @@ export default function Calendar() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between rounded-t-2xl">
-              <h2 className="text-xl font-bold text-gray-800">Tambah Event</h2>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-500">
+              <h2 className="text-xl font-bold text-gray-800">{editingEventId ? 'Edit Event' : 'Tambah Event'}</h2>
+              <button
+                onClick={() => {
+                  setEditingEventId(null);
+                  setShowAddModal(false);
+                }}
+                className="text-gray-500"
+              >
                 <X size={24} />
               </button>
             </div>
@@ -519,7 +562,7 @@ export default function Calendar() {
                 disabled={!newEvent.title || !newEvent.event_date}
                 className="w-full bg-gradient-to-r from-pink-500 to-orange-400 text-white py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Tambah Event
+                {editingEventId ? 'Simpan Perubahan' : 'Tambah Event'}
               </button>
             </div>
           </div>
@@ -587,18 +630,32 @@ Ujian Piano
                         <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-2 rounded">{event.notes}</p>
                       )}
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteEvent(event.id);
-                        if (selectedDateEvents.length === 1) {
+                    <div className="flex items-center gap-2 ml-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedDateEvents(null);
-                        }
-                      }}
-                      className="text-red-500 hover:text-red-700 ml-2"
-                    >
-                      <X size={18} />
-                    </button>
+                          handleEditEvent(event);
+                        }}
+                        className="text-gray-500 hover:text-pink-600"
+                        aria-label="Edit event"
+                      >
+                        <Pencil size={17} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteEvent(event.id);
+                          if (selectedDateEvents.length === 1) {
+                            setSelectedDateEvents(null);
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-700"
+                        aria-label="Hapus event"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
