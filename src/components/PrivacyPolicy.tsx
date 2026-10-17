@@ -73,13 +73,13 @@ const SECTIONS = [
   },
   {
     title: 'Perubahan Kebijakan',
-    items: [
+    body: [
       'Kami dapat memperbarui kebijakan privasi ini dari waktu ke waktu. Perubahan akan dipublikasikan di halaman ini dengan tanggal pembaruan terbaru. Perubahan penting akan kami informasikan melalui aplikasi atau email.',
     ],
   },
   {
     title: 'Kontak',
-    items: [
+    body: [
       'Untuk pertanyaan tentang kebijakan privasi ini, atau untuk meminta salinan/perbaikan/penghapusan data Anda, hubungi kami di: sisatset.app@gmail.com',
     ],
   },
@@ -112,14 +112,23 @@ export default function PrivacyPolicy() {
             {SECTIONS.map((section) => (
               <section key={section.title}>
                 <h2 className="font-semibold text-gray-800 mb-2">{section.title}</h2>
-                <ul className="space-y-2">
-                  {section.items.map((item, i) => (
-                    <li key={i} className="text-sm text-gray-600 leading-relaxed flex gap-2">
-                      <span className="text-pink-500 mt-0.5">&bull;</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                {section.items && (
+                  <ul className="space-y-2">
+                    {section.items.map((item, i) => (
+                      <li key={i} className="text-sm text-gray-600 leading-relaxed flex gap-2">
+                        <span className="text-pink-500 mt-0.5">&bull;</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {section.body && (
+                  <div className="space-y-2">
+                    {section.body.map((para, i) => (
+                      <p key={i} className="text-sm text-gray-600 leading-relaxed">{para}</p>
+                    ))}
+                  </div>
+                )}
               </section>
             ))}
           </div>

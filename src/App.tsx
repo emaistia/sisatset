@@ -14,7 +14,7 @@ import Finance from './components/Finance';
 import Notes from './components/Notes';
 import Shopping from './components/Shopping';
 import Settings from './components/Settings';
-import { Home, CalendarDays, BookOpen, UtensilsCrossed, Wallet, StickyNote, ShoppingCart, Settings } from 'lucide-react';
+import { Home, CalendarDays, BookOpen, UtensilsCrossed, Wallet, StickyNote, ShoppingCart, Settings as SettingsIcon } from 'lucide-react';
 
 type Tab = 'dashboard' | 'calendar' | 'homework' | 'meal' | 'finance' | 'notes' | 'shopping' | 'settings';
 
@@ -72,7 +72,7 @@ function AppContent() {
     { id: 'notes' as Tab, label: 'Catatan', icon: StickyNote },
     { id: 'finance' as Tab, label: 'Keuangan', icon: Wallet },
     { id: 'shopping' as Tab, label: 'Belanja', icon: ShoppingCart },
-    { id: 'settings' as Tab, label: 'Pengaturan', icon: Settings },
+    { id: 'settings' as Tab, label: 'Pengaturan', icon: SettingsIcon },
   ];
 
   return (
