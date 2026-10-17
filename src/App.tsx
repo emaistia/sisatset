@@ -4,6 +4,8 @@ import { Capacitor } from '@capacitor/core';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider, useApp } from './contexts/AppContext';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import DemoBanner from './components/DemoBanner';
+import { isDemoEmail } from './lib/demo';
 import LandingPage from './components/LandingPage';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
@@ -23,6 +25,10 @@ const TAB_ORDER: Tab[] = ['dashboard', 'calendar', 'homework', 'meal', 'notes', 
 function AppContent() {
   if (window.location.pathname === '/kebijakan-privasi') {
     return <PrivacyPolicy />;
+  }
+  if (window.location.pathname === '/daftar') {
+    window.history.replaceState({}, '', '/');
+    window.dispatchEvent(new PopStateEvent('popstate'));
   }
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: appLoading } = useApp();
@@ -64,6 +70,8 @@ function AppContent() {
     return <Onboarding />;
   }
 
+  const isDemo = isDemoEmail(user.email);
+
   const tabs = [
     { id: 'dashboard' as Tab, label: 'Dashboard', icon: Home },
     { id: 'calendar' as Tab, label: 'Kalender', icon: CalendarDays },
@@ -78,6 +86,11 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-orange-50">
       <div className="max-w-2xl mx-auto">
+        {isDemo && (
+          <div className="pt-4 px-4">
+            <DemoBanner />
+          </div>
+        )}
         {activeTab === 'dashboard' && <Dashboard onNavigate={(tab) => setActiveTab(tab)} />}
         {activeTab === 'calendar' && <Calendar />}
         {activeTab === 'homework' && <Homework />}

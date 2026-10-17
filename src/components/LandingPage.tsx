@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { enterDemo } from '../lib/demo';
 import {
   CalendarDays, BookOpen, UtensilsCrossed, Wallet, StickyNote, ShoppingCart,
   ChevronRight, Star, Users, Sparkles, ArrowRight, Mail, Lock, Eye, EyeOff,
@@ -21,7 +22,8 @@ export default function LandingPage() {
     setLoading(true);
     setError('');
     try {
-      await signIn('demo@email.com', 'demo123');
+      await enterDemo();
+      window.location.href = '/';
     } catch (err: any) {
       setError(err.message || 'Gagal masuk akun demo');
     } finally {
@@ -256,7 +258,7 @@ export default function LandingPage() {
             </div>
 
             <p className="text-xs text-gray-400 mt-3">
-              Demo: demo@email.com / demo123
+              Mode Demo: klik Coba Demo, langsung masuk dengan data contoh
             </p>
           </div>
         </div>

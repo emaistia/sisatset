@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
 import { supabase, Child, Note, ShoppingItem } from '../lib/supabase';
-import { Settings as SettingsIcon, Users, Calendar, StickyNote, ShoppingCart, LogOut, Plus, X, Trash2, Zap, Shield } from 'lucide-react';
+import { Settings as SettingsIcon, Users, Calendar, StickyNote, ShoppingCart, LogOut, Plus, X, Trash2, Zap, Shield, UserPlus } from 'lucide-react';
 import QuickInput from './QuickInput';
+import { isDemoEmail, exitDemo } from '../lib/demo';
 
 const COLORS = ['#FF6B9D', '#FF8C42', '#FFD93D', '#6BCF7F', '#4ECDC4', '#A78BFA'];
 const DAYS = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
@@ -186,6 +187,13 @@ export default function Settings() {
     }
   };
 
+  const handleExitDemo = async () => {
+    if (confirm('Keluar dari Mode Demo? Data demo akan dihapus.')) {
+      await exitDemo();
+      window.location.href = '/';
+    }
+  };
+
   const handleQuickNotes = async (text: string) => {
     if (!user) return;
 
@@ -295,6 +303,42 @@ export default function Settings() {
           <div className="p-5">
             {activeTab === 'profile' && (
               <div className="space-y-4">
+                {isDemoEmail(user?.email) ? (
+                  <div className="bg-gradient-to-br from-pink-50 to-orange-50 border border-pink-200 rounded-xl p-4 space-y-3">
+                    <div>
+                      <p className="font-semibold text-gray-800">Siap pakai SiSatSet untuk keluargamu sendiri?</p>
+                      <p className="text-sm text-gray-600 mt-0.5">
+                        Buat akun gratis untuk mulai mengatur jadwal, PR, menu, dan keuangan keluargamu.
+                      </p>
+                    </div>
+                    <a
+                      href="/"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.location.href = '/';
+                      }}
+                      className="block w-full bg-pink-500 text-white py-3 rounded-lg font-medium text-center hover:bg-pink-600 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <UserPlus size={20} />
+                      Daftar Gratis
+                    </a>
+                    <button
+                      onClick={handleExitDemo}
+                      className="w-full border border-gray-300 text-gray-700 py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+                    >
+                      <LogOut size={20} />
+                      Keluar dari Demo
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-red-500 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+                  >
+                    <LogOut size={20} />
+                    Keluar
+                  </button>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nama Mama</label>
                   <input
@@ -334,13 +378,15 @@ export default function Settings() {
                   Kebijakan Privasi
                 </a>
 
-                <button
-                  onClick={handleLogout}
-                  className="w-full bg-red-500 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
-                >
-                  <LogOut size={20} />
-                  Keluar
-                </button>
+                {!isDemoEmail(user?.email) && (
+                  <button
+                    onClick={handleLogout}
+                    className="w-full bg-red-500 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+                  >
+                    <LogOut size={20} />
+                    Keluar
+                  </button>
+                )}
               </div>
             )}
 
