@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { App as CapApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider, useApp } from './contexts/AppContext';
 import LandingPage from './components/LandingPage';
@@ -11,14 +13,33 @@ import Finance from './components/Finance';
 import Notes from './components/Notes';
 import Shopping from './components/Shopping';
 import Settings from './components/Settings';
-import { Home, CalendarDays, BookOpen, UtensilsCrossed, Wallet, StickyNote, ShoppingCart } from 'lucide-react';
+import { Home, CalendarDays, BookOpen, UtensilsCrossed, Wallet, StickyNote, ShoppingCart, Settings } from 'lucide-react';
 
 type Tab = 'dashboard' | 'calendar' | 'homework' | 'meal' | 'finance' | 'notes' | 'shopping' | 'settings';
+
+const TAB_ORDER: Tab[] = ['dashboard', 'calendar', 'homework', 'meal', 'notes', 'finance', 'shopping'];
 
 function AppContent() {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: appLoading } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const backHandler = CapApp.addListener('backButton', () => {
+      const currentIndex = TAB_ORDER.indexOf(activeTab);
+      if (currentIndex > 0) {
+        setActiveTab(TAB_ORDER[currentIndex - 1]);
+      } else {
+        CapApp.exitApp();
+      }
+    });
+
+    return () => {
+      backHandler.then((listener) => listener.remove());
+    };
+  }, [activeTab]);
 
   if (authLoading || appLoading) {
     return (
@@ -47,6 +68,7 @@ function AppContent() {
     { id: 'notes' as Tab, label: 'Catatan', icon: StickyNote },
     { id: 'finance' as Tab, label: 'Keuangan', icon: Wallet },
     { id: 'shopping' as Tab, label: 'Belanja', icon: ShoppingCart },
+    { id: 'settings' as Tab, label: 'Pengaturan', icon: Settings },
   ];
 
   return (
