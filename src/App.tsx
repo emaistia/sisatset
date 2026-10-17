@@ -3,6 +3,7 @@ import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider, useApp } from './contexts/AppContext';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import LandingPage from './components/LandingPage';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
@@ -20,6 +21,9 @@ type Tab = 'dashboard' | 'calendar' | 'homework' | 'meal' | 'finance' | 'notes' 
 const TAB_ORDER: Tab[] = ['dashboard', 'calendar', 'homework', 'meal', 'notes', 'finance', 'shopping'];
 
 function AppContent() {
+  if (window.location.pathname === '/kebijakan-privasi') {
+    return <PrivacyPolicy />;
+  }
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: appLoading } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
