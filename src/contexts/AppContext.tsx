@@ -67,7 +67,10 @@ export function AppProvider({ children: childrenProp }: { children: ReactNode })
       setLoading(false);
     };
 
-    loadData();
+    loadData().catch((error) => {
+      console.error('Error loading initial data:', error);
+      setLoading(false);
+    });
   }, [user]);
 
   return (
