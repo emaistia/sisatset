@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
 import { supabase, Child, Note, ShoppingItem } from '../lib/supabase';
-import { Settings as SettingsIcon, Users, Calendar, StickyNote, ShoppingCart, LogOut, Plus, X, Trash2, Zap } from 'lucide-react';
+import { Settings as SettingsIcon, Users, Calendar, StickyNote, ShoppingCart, LogOut, Plus, X, Trash2, Zap, Shield } from 'lucide-react';
 import QuickInput from './QuickInput';
 
 const COLORS = ['#FF6B9D', '#FF8C42', '#FFD93D', '#6BCF7F', '#4ECDC4', '#A78BFA'];
@@ -323,6 +323,16 @@ export default function Settings() {
                 >
                   Simpan Profil
                 </button>
+
+                <a
+                  href="/kebijakan-privasi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full border border-pink-200 text-pink-600 py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-pink-50 transition-colors"
+                >
+                  <Shield size={20} />
+                  Kebijakan Privasi
+                </a>
 
                 <button
                   onClick={handleLogout}
