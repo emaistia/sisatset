@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.sisatset.app',
-  appName: 'SiSatSet',
+  appId: 'com.sisatset.moms',
+  appName: 'SiSatSet Moms',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

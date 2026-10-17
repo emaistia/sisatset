@@ -1,4 +1,4 @@
-package com.sisatset.app;
+package com.sisatset.moms;
 
 import com.getcapacitor.BridgeActivity;
 
