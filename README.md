@@ -39,7 +39,7 @@
 
 ## Tim & Kontak
 - Creator: Ema Istianasari (emaistianasari@gmail.com)
-- Hackathon: [Nama Hackathon/Challenge]
+- Hackathon: AFP HACKATON
 - Tahun: 2025
 
 ***
